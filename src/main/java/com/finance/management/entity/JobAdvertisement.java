@@ -1,5 +1,6 @@
 package com.finance.management.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -14,7 +15,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "job_advertisement")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "jobPosition", "city", "employer"})
 public class JobAdvertisement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,15 +40,34 @@ public class JobAdvertisement {
     @Column(name = "application_deadline")
     private LocalDate applicationDeadline;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_position_id")
+    @JsonIgnore
     private JobPosition jobPosition;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id")
+    @JsonIgnore
     private City city;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employer_id")
+    @JsonIgnore
     private Employer employer;
+
+    @Override
+    public String toString() {
+        return "JobAdvertisement{" +
+                "advertisementId=" + advertisementId +
+                ", openPositionCount=" + openPositionCount +
+                ", description='" + description + '\'' +
+                ", minSalary=" + minSalary +
+                ", maxSalary=" + maxSalary +
+                ", jobReleaseDate=" + jobReleaseDate +
+                ", applicationDeadline=" + applicationDeadline +
+                ", jobPosition=" + (jobPosition != null ? jobPosition.getClass() : null) +
+                ", city=" + (city != null ? city.getClass() : null) +
+                ", employer=" + (employer != null ? employer.getClass() : null) +
+                '}';
+    }
 }
