@@ -1,59 +1,59 @@
-DROP TABLE IF EXISTS job_advertisement CASCADE;
-DROP TABLE IF EXISTS job_position CASCADE;
-DROP TABLE IF EXISTS job_seeker CASCADE;
-DROP TABLE IF EXISTS system_employee CASCADE;
-DROP TABLE IF EXISTS city CASCADE;
-DROP TABLE IF EXISTS employer CASCADE;
+DROP TABLE IF EXISTS service_menu CASCADE;
+DROP TABLE IF EXISTS exercise CASCADE;
+DROP TABLE IF EXISTS participant CASCADE;
+DROP TABLE IF EXISTS auth_token CASCADE;
+DROP TABLE IF EXISTS subscription CASCADE;
 
-CREATE TABLE city (
-    city_id SERIAL PRIMARY KEY,
-    city_name VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE job_position (
-    job_position_id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE job_seeker (
-    job_seeker_id SERIAL PRIMARY KEY,
+CREATE TABLE service_menu (
+    id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
-    national_id VARCHAR(50) NOT NULL,
-    birth_date DATE NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    re_password VARCHAR(255) NOT NULL
+    price_per_session DECIMAL(10, 2) NOT NULL,
+    total_sessions INT NOT NULL,
+    schedule TEXT,
+    duration_in_minutes INT NOT NULL
 );
 
-CREATE TABLE employer (
-    employer_id SERIAL PRIMARY KEY,
-    company_name VARCHAR(255) NOT NULL,
-    company_web_page VARCHAR(255),
-    email VARCHAR(255) NOT NULL,
-    phone_number VARCHAR(50),
-    password VARCHAR(255) NOT NULL,
-    re_password VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE system_employee (
-    system_employee_id SERIAL PRIMARY KEY,
+CREATE TABLE exercise (
+    id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL
+    duration_in_minutes INT NOT NULL,
+    description TEXT,
+    service_menu_id BIGINT,
+    FOREIGN KEY (service_menu_id) REFERENCES service_menu(id) ON DELETE SET NULL
 );
 
-CREATE TABLE job_advertisement (
-    job_advertisement_id SERIAL PRIMARY KEY,
-    open_position_count INT NOT NULL,
-    description TEXT NOT NULL,
-    min_salary INT NOT NULL,
-    max_salary INT NOT NULL,
-    job_release_date DATE NOT NULL,
-    application_deadline DATE NOT NULL,
-    job_position_id INT NOT NULL,
-    city_id INT NOT NULL,
-    employer_id INT NOT NULL,
-    FOREIGN KEY (job_position_id) REFERENCES job_position(job_position_id) ON DELETE CASCADE,
-    FOREIGN KEY (city_id) REFERENCES city(city_id) ON DELETE CASCADE,
-    FOREIGN KEY (employer_id) REFERENCES employer(employer_id) ON DELETE CASCADE
+CREATE TABLE participant (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    email VARCHAR(255),
+    password VARCHAR(255),
+    phone_number VARCHAR(20),
+    is_verified BOOLEAN,
+    verification_code VARCHAR(50),
+    reset_token VARCHAR(255),
+    payment_status BOOLEAN,
+    payment_otp VARCHAR(6),
+    payment_otp_expiration TIMESTAMP,
+    bill_amount DECIMAL(10, 2),
+    is_bill_verified BOOLEAN,
+    credit_card_info VARCHAR(255)
+);
+
+CREATE TABLE auth_token (
+    id BIGSERIAL PRIMARY KEY,
+    token VARCHAR(255) NOT NULL,
+    expiration_date_time TIMESTAMP NOT NULL,
+    participant_id BIGINT,
+    FOREIGN KEY (participant_id) REFERENCES participant(id) ON DELETE CASCADE
+);
+
+CREATE TABLE subscription (
+    id BIGSERIAL PRIMARY KEY,
+    start_date TIMESTAMP NOT NULL,
+    end_date TIMESTAMP NOT NULL,
+    remaining_sessions INT NOT NULL,
+    participant_id BIGINT,
+    service_menu_id BIGINT,
+    FOREIGN KEY (participant_id) REFERENCES participant(id) ON DELETE CASCADE,
+    FOREIGN KEY (service_menu_id) REFERENCES service_menu(id) ON DELETE CASCADE
 );
