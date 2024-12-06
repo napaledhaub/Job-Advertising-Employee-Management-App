@@ -45,10 +45,6 @@ public class Participant {
     @Column(name="reset_token")
     private String resetToken;
 
-    @JsonProperty("payment_status")
-    @Column(name="payment_status")
-    private boolean paymentStatus;
-
     @JsonProperty("payment_otp")
     @Column(name="payment_otp")
     private String paymentOTP;

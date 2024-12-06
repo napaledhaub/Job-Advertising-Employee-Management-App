@@ -35,7 +35,7 @@ public class SubscriptionController {
 
     @PostMapping("/extend")
     public ResponseEntity<String> extendSubscription(@RequestHeader("Authorization") String authToken, @RequestBody SubscriptionRequest subscriptionRequest) {
-        subscriptionService.extendSubscription(authToken, subscriptionRequest.getSubscriptionId(), subscriptionRequest.getNumberOfSessions());
+        subscriptionService.extendSubscription(authToken, subscriptionRequest.getSubscriptionId());
         return ResponseEntity.ok("Session duration successfully extended.");
     }
 }

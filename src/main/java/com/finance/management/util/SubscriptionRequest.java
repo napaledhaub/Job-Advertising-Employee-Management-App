@@ -11,6 +11,4 @@ public class SubscriptionRequest {
     private Long serviceMenuId;
     @JsonProperty("subscription_id")
     private Long subscriptionId;
-    @JsonProperty("number_of_sessions")
-    private int numberOfSessions;
 }

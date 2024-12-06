@@ -59,6 +59,7 @@ public class SubscriptionService {
             subscription.setRemainingSessions(serviceMenu.getTotalSessions());
 
             participant.setBillAmount(BigDecimal.valueOf(serviceMenu.getPricePerSession() * serviceMenu.getTotalSessions()));
+            participant.setBillVerified(false);
             participantDAO.save(participant);
             return subscriptionDAO.save(subscription);
         } else {
@@ -71,6 +72,21 @@ public class SubscriptionService {
         if (authToken != null) {
             Optional<Subscription> subscriptionOptional = subscriptionDAO.findById(subscriptionId);
             if (subscriptionOptional.isPresent()) {
+                Subscription subscription = subscriptionOptional.get();
+                Participant participant = authToken.getParticipant();
+                ServiceMenu serviceMenu = subscription.getServiceMenu();
+
+                BigDecimal currentBillAmount = participant.getBillAmount() != null ? participant.getBillAmount() : BigDecimal.ZERO;
+                BigDecimal pricePerSession = BigDecimal.valueOf(serviceMenu.getPricePerSession());
+                BigDecimal remainingSessions = BigDecimal.valueOf(subscription.getRemainingSessions());
+                BigDecimal deductionAmount = pricePerSession.multiply(remainingSessions);
+                BigDecimal newBillAmount = currentBillAmount.subtract(deductionAmount);
+                if (newBillAmount.compareTo(BigDecimal.ZERO) < 0) {
+                    newBillAmount = BigDecimal.ZERO;
+                }
+
+                participant.setBillAmount(newBillAmount);
+                participantDAO.save(participant);
                 subscriptionDAO.delete(subscriptionOptional.get());
             } else {
                 throw new EntityNotFoundException("Subscription code not found.");
@@ -80,17 +96,29 @@ public class SubscriptionService {
         }
     }
 
-    public void extendSubscription(String token, Long subscriptionId, int numberOfSessions) {
+    public void extendSubscription(String token, Long subscriptionId) {
         AuthToken authToken = authTokenDAO.findByToken(token);
         if (authToken != null) {
             Optional<Subscription> subscriptionOptional = subscriptionDAO.findById(subscriptionId);
             if (subscriptionOptional.isPresent()) {
                 Subscription subscription = subscriptionOptional.get();
-                subscription.setEndDate(subscription.getEndDate().plusDays(numberOfSessions));
-                subscription.setRemainingSessions(subscription.getRemainingSessions() + numberOfSessions);
+                ServiceMenu serviceMenu = subscription.getServiceMenu();
+                Participant participant = subscription.getParticipant();
+
+                subscription.setEndDate(subscription.getEndDate().plusDays(serviceMenu.getTotalSessions()));
+                subscription.setRemainingSessions(subscription.getRemainingSessions() + serviceMenu.getTotalSessions());
                 subscriptionDAO.save(subscription);
+
+                BigDecimal pricePerSession = BigDecimal.valueOf(serviceMenu.getPricePerSession());
+                BigDecimal totalSessions = BigDecimal.valueOf(serviceMenu.getTotalSessions());
+                BigDecimal currentBillAmount = participant.getBillAmount() != null ? participant.getBillAmount() : BigDecimal.ZERO;
+                BigDecimal newBillAmount = pricePerSession.multiply(totalSessions).add(currentBillAmount);
+
+                participant.setBillAmount(newBillAmount);
+                participant.setBillVerified(false);
+                participantDAO.save(participant);
             } else {
-                throw new EntityNotFoundException("Subscription code not found.");
+                throw new EntityNotFoundException("Subscription not found.");
             }
         } else {
             throw new EntityNotFoundException("Participant not found.");

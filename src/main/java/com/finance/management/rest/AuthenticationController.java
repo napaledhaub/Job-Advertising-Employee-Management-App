@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.mail.MessagingException;
 import java.util.Optional;
 
 @RestController
@@ -37,11 +36,12 @@ public class AuthenticationController {
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
         try {
+            String verificationCode = emailService.generateVerificationCode();
             String subject = "Registration Confirmation";
-            String text = "Thank you for registering at our fitness center. Here is your OTP to activate your account:";
-            String verificationCode = emailService.sendEmail(registerRequest.getEmail(), subject, text);
+            String text = "Thank you for registering at our fitness center. Here is your OTP to activate your account:" + verificationCode;
+            emailService.sendEmail(registerRequest.getEmail(), subject, text);
             registrationService.register(registerRequest, verificationCode);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(FAILED);
         }
 
@@ -102,9 +102,7 @@ public class AuthenticationController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody EmailRequest emailRequest) {
         try {
-            boolean isPasswordReset = passwordResetService.requestPasswordReset(emailRequest);
-
-            if (isPasswordReset) {
+            if (passwordResetService.requestPasswordReset(emailRequest)) {
                 return ResponseEntity.ok("Password reset email has been successfully sent. Please check your email.");
             }
 
@@ -116,13 +114,7 @@ public class AuthenticationController {
 
     @PostMapping("/forgot-password-confirmation")
     public ResponseEntity<?> forgotPasswordConfirmation(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
-        if (!forgotPasswordRequest.getNewPassword().equals(forgotPasswordRequest.getConfirmNewPassword())) {
-            return ResponseEntity.badRequest().body("Passwords do not match.");
-        }
-
-        boolean isPasswordReset = passwordResetService.confirmPasswordReset(forgotPasswordRequest);
-
-        if (isPasswordReset) {
+        if (passwordResetService.confirmPasswordReset(forgotPasswordRequest)) {
             return ResponseEntity.ok("Password successfully changed.");
         }
 

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.mail.MessagingException;
 import java.util.Base64;
 
 @Service
@@ -25,8 +24,7 @@ public class RegistrationService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public String register(RegisterRequest request, String verificationCode) throws MessagingException {
-
+    public String register(RegisterRequest request, String verificationCode) {
         if (participantDAO.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email is already in use.");
         }
@@ -45,7 +43,6 @@ public class RegistrationService {
                 request.getCreditCard().getOwnerName());
 
         participant.setCreditCardInfo(creditCardInfo);
-
         participantDAO.save(participant);
 
         return verificationCode;
@@ -57,6 +54,7 @@ public class RegistrationService {
             Participant participant = authToken.getParticipant();
             if (verificationRequest.getOtp().equals(participant.getVerificationCode())) {
                 participant.setVerified(true);
+                participant.setVerificationCode(null);
                 participantDAO.save(participant);
                 return true;
             }

@@ -31,7 +31,6 @@ CREATE TABLE participant (
     is_verified BOOLEAN,
     verification_code VARCHAR(50),
     reset_token VARCHAR(255),
-    payment_status BOOLEAN,
     payment_otp VARCHAR(6),
     payment_otp_expiration TIMESTAMP,
     bill_amount DECIMAL(10, 2),

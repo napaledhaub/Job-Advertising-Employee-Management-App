@@ -26,7 +26,7 @@ public class InfoManagementController {
 
     @PostMapping("/update-password")
     public ResponseEntity<String> updatePassword(@RequestHeader("Authorization") String authToken, @RequestBody UpdateInfoManagementRequest updateInfoManagementRequest) {
-        participantService.updatePassword(authToken, updateInfoManagementRequest.getNewPassword());
+        participantService.updatePassword(authToken, updateInfoManagementRequest.getOldPassword(), updateInfoManagementRequest.getNewPassword());
         return ResponseEntity.ok("Password successfully updated.");
     }
 }

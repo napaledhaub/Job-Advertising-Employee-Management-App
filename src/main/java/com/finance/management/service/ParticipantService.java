@@ -37,12 +37,11 @@ public class ParticipantService {
             participant.setName(newFullName);
             participantDAO.save(participant);
         } else {
-            throw new EntityNotFoundException("Peserta tidak ditemukan.");
+            throw new EntityNotFoundException("Participant not found.");
         }
     }
 
     public void updateCreditCardInfo(String token, CreditCardResponse creditCard) {
-
         AuthToken authToken = authTokenDAO.findByToken(token);
         if (authToken != null) {
             Participant participant = authToken.getParticipant();
@@ -58,13 +57,18 @@ public class ParticipantService {
         }
     }
 
-    public void updatePassword(String token, String newPassword) {
+    public void updatePassword(String token, String oldPassword, String newPassword) {
         AuthToken authToken = authTokenDAO.findByToken(token);
         if (authToken != null) {
             Participant participant = authToken.getParticipant();
-            String encryptedPassword = passwordEncoder.encode(newPassword);
-            participant.setPassword(encryptedPassword);
-            participantDAO.save(participant);
+            if (passwordEncoder.matches(oldPassword, participant.getPassword())) {
+                String encryptedPassword = passwordEncoder.encode(newPassword);
+                participant.setPassword(encryptedPassword);
+                participantDAO.save(participant);
+            }
+            else {
+                throw new RuntimeException("Old password not match.");
+            }
         } else {
             throw new EntityNotFoundException("Participant not found.");
         }

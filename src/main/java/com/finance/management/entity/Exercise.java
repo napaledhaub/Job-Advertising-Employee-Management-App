@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "service_menu")
+@Table(name = "exercise")
 @JsonIgnoreProperties({"serviceMenu"})
 public class Exercise {
     @Id

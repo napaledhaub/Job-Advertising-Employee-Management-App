@@ -19,19 +19,19 @@ public class ServiceMenuService {
         return serviceMenuDAO.findAll();
     }
 
-    public ServiceMenu addServiceMenu(AddServiceMenuRequest dtoAddServiceMenuRequest) {
+    public ServiceMenu addServiceMenu(AddServiceMenuRequest addServiceMenuRequest) {
         ServiceMenu serviceMenu = new ServiceMenu();
-        serviceMenu.setName(dtoAddServiceMenuRequest.getName());
-        serviceMenu.setSchedule(dtoAddServiceMenuRequest.getSchedule());
-        serviceMenu.setDurationInMinutes(dtoAddServiceMenuRequest.getDurationInMinutes());
-        serviceMenu.setPricePerSession(dtoAddServiceMenuRequest.getPricePerSession());
-        serviceMenu.setTotalSessions(dtoAddServiceMenuRequest.getTotalSessions());
+        serviceMenu.setName(addServiceMenuRequest.getName());
+        serviceMenu.setSchedule(addServiceMenuRequest.getSchedule());
+        serviceMenu.setDurationInMinutes(addServiceMenuRequest.getDurationInMinutes());
+        serviceMenu.setPricePerSession(addServiceMenuRequest.getPricePerSession());
+        serviceMenu.setTotalSessions(addServiceMenuRequest.getTotalSessions());
         List<Exercise> exerciseList = new ArrayList<>();
-        dtoAddServiceMenuRequest.getExerciseList().forEach(dtoExercise -> {
+        addServiceMenuRequest.getExerciseList().forEach(excerciseRequest -> {
             Exercise exercise = new Exercise();
-            exercise.setName(dtoExercise.getName());
-            exercise.setDescription(dtoExercise.getDescription());
-            exercise.setDurationInMinutes(dtoExercise.getDurationInMinutes());
+            exercise.setName(excerciseRequest.getName());
+            exercise.setDescription(excerciseRequest.getDescription());
+            exercise.setDurationInMinutes(excerciseRequest.getDurationInMinutes());
             exercise.setServiceMenu(serviceMenu);
             exerciseList.add(exercise);
         });

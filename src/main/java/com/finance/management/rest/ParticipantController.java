@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.mail.MessagingException;
-
 @RestController
 @RequestMapping("/participant")
 public class ParticipantController {
@@ -39,7 +37,7 @@ public class ParticipantController {
         try {
             paymentService.sendEmailVerification(email, participantId);
             return ResponseEntity.ok("Verification email has been sent.");
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Failed to send verification email.");
         }

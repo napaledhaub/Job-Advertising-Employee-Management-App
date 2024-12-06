@@ -8,7 +8,6 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.mail.MessagingException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -32,12 +31,10 @@ public class PaymentService {
             if (participant.getPaymentOTP() != null &&
                     participant.getPaymentOTP().equals(otp) &&
                     LocalDateTime.now().isBefore(participant.getPaymentOTPExpiration())) {
-
-                participant.setPaymentStatus(true);
                 participant.setPaymentOTP(null);
                 participant.setPaymentOTPExpiration(null);
-
-
+                participant.setBillAmount(BigDecimal.valueOf(0));
+                participant.setBillVerified(false);
                 participantDAO.save(participant);
                 return true;
             }
@@ -92,7 +89,7 @@ public class PaymentService {
         return verificationCode.toString();
     }
 
-    public void sendEmailVerification(String email, Long participantId) throws MessagingException {
+    public void sendEmailVerification(String email, Long participantId) {
         String code = generateVerificationCode();
 
         Optional<Participant> participantOptional = participantDAO.findById(participantId);
@@ -100,6 +97,7 @@ public class PaymentService {
         if (participantOptional.isPresent()) {
             Participant participant = participantOptional.get();
             participant.setPaymentOTP(code);
+            participant.setPaymentOTPExpiration(LocalDateTime.now().plusMinutes(15));
             participantDAO.save(participant);
         }
 

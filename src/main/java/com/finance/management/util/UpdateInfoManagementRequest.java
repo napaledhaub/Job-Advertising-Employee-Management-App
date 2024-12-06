@@ -11,6 +11,8 @@ public class UpdateInfoManagementRequest {
     private String newFullName;
     @JsonProperty("new_credit_card_info")
     private CreditCardResponse newCreditCardInfo;
+    @JsonProperty("old_password")
+    private String oldPassword;
     @JsonProperty("new_password")
     private String newPassword;
 }

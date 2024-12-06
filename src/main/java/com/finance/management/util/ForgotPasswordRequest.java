@@ -11,6 +11,4 @@ public class ForgotPasswordRequest {
     private String resetToken;
     @JsonProperty("new_password")
     private String newPassword;
-    @JsonProperty("confirm_new_password")
-    private String confirmNewPassword;
 }
