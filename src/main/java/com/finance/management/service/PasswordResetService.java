@@ -4,6 +4,7 @@ import com.finance.management.dao.ParticipantDAO;
 import com.finance.management.entity.Participant;
 import com.finance.management.util.EmailRequest;
 import com.finance.management.util.ForgotPasswordRequest;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,8 +34,9 @@ public class PasswordResetService {
             String text = "You have requested a password reset. Here is the token to reset your password: ".concat(resetToken);
             emailService.sendEmail(participant.getEmail(), subject, text);
             return true;
+        } else {
+            throw new EntityNotFoundException("Participant not found");
         }
-        return false;
     }
 
     public boolean confirmPasswordReset(ForgotPasswordRequest forgotPasswordRequest) {
@@ -45,7 +47,8 @@ public class PasswordResetService {
             participant.setPassword(passwordEncoder.encode(forgotPasswordRequest.getNewPassword()));
             participantDAO.save(participant);
             return true;
+        } else {
+            throw new EntityNotFoundException("Participant not found");
         }
-        return false;
     }
 }

@@ -5,7 +5,6 @@ import com.finance.management.dao.ParticipantDAO;
 import com.finance.management.entity.AuthToken;
 import com.finance.management.entity.Participant;
 import com.finance.management.util.RegisterRequest;
-import com.finance.management.util.VerificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,7 @@ public class RegistrationService {
 
     public String register(RegisterRequest request, String verificationCode) {
         if (participantDAO.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email is already in use.");
+            throw new RuntimeException("Email is already in use");
         }
 
         Participant participant = new Participant();
@@ -48,11 +47,11 @@ public class RegistrationService {
         return verificationCode;
     }
 
-    public boolean validateOtp(String token, VerificationRequest verificationRequest) {
+    public boolean validateOtp(String token, String verificationRequest) {
         AuthToken authToken = authTokenDAO.findByToken(token);
         if (authToken != null) {
             Participant participant = authToken.getParticipant();
-            if (verificationRequest.getOtp().equals(participant.getVerificationCode())) {
+            if (verificationRequest.equals(participant.getVerificationCode())) {
                 participant.setVerified(true);
                 participant.setVerificationCode(null);
                 participantDAO.save(participant);
@@ -73,8 +72,7 @@ public class RegistrationService {
 
             return Base64.getEncoder().encodeToString(encryptedData);
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
     }
 }

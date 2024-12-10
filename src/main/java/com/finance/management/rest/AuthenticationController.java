@@ -44,80 +44,115 @@ public class AuthenticationController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(FAILED);
         }
-
         return ResponseEntity.ok(SUCCESS);
     }
 
-    @GetMapping("/check-status")
-    public ResponseEntity<String> checkStatus(@RequestParam String email) {
-        Optional<Participant> participantOptional = participantService.findByEmail(email);
-
-        if (participantOptional.isPresent()) {
-            Participant participant = participantOptional.get();
-
-            if (participant.isVerified()) {
-                return ResponseEntity.ok("Membership status: " + ParticipantStatus.REGISTERED.toString());
-            } else {
-                return ResponseEntity.ok("Membership status: " + ParticipantStatus.NOT_VALIDATED.toString());
+    @PostMapping("/check-status")
+    public ResponseEntity<?> checkStatus(@RequestBody EmailRequest email) {
+        Response response = new Response();
+        try {
+            Optional<Participant> participantOptional = participantService.findByEmail(email.getEmail());
+            if (participantOptional.isPresent()) {
+                Participant participant = participantOptional.get();
+                if (participant.isVerified()) {
+                    response.setMessage("Membership status: " + ParticipantStatus.REGISTERED.toString());
+                } else {
+                    response.setMessage("Membership status: " + ParticipantStatus.NOT_VALIDATED.toString());
+                }
             }
+            else {
+                response.setMessage("Membership status: " + ParticipantStatus.NOT_REGISTERED.toString());
+            }
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.setMessage("Check status failed: " + e.getMessage());
         }
-        return ResponseEntity.ok("Membership status: " + ParticipantStatus.NOT_REGISTERED.toString());
+        return ResponseEntity.badRequest().body(response);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        LoginResponse response = new LoginResponse();
         try {
-            LoginResponse response = authenticationService.login(loginRequest.getEmail(), loginRequest.getPassword());
+            response = authenticationService.login(loginRequest.getEmail(), loginRequest.getPassword());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Authentication Failed: " + e.getMessage());
+            response.setMessage("Authentication failed: " + e.getMessage());
         }
+        return ResponseEntity.badRequest().body(response);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String authToken) {
-        authenticationService.logout(authToken);
-        return ResponseEntity.ok("Logged out successfully.");
+        Response response = new Response();
+        try {
+            authenticationService.logout(authToken);
+            response.setMessage("Logged out successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.setMessage("Logout failed: " + e.getMessage());
+        }
+        return ResponseEntity.badRequest().body(response);
     }
 
     @PostMapping("/confirm")
-    public ResponseEntity<String> login(@RequestHeader("Authorization") String authToken, @RequestBody VerificationRequest verificationRequest) {
-        boolean validVerificationCode = registrationService.validateOtp(authToken, verificationRequest);
-        if (validVerificationCode) {
-            return ResponseEntity.ok("Your account has been successfully validated. Membership status: " + ParticipantStatus.REGISTERED.toString());
+    public ResponseEntity<?> login(@RequestHeader("Authorization") String authToken, @RequestBody VerificationRequest verificationRequest) {
+        Response response = new Response();
+        try {
+            if (registrationService.validateOtp(authToken, verificationRequest.getOtp())) {
+                response.setMessage("Your account has been successfully validated. Membership status: " + ParticipantStatus.REGISTERED.toString());
+            } else {
+                response.setMessage("The OTP you entered is incorrect");
+            }
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.setMessage("Confirm email failed: " + e.getMessage());
         }
-        return ResponseEntity.ok("The OTP you entered is incorrect.");
+        return ResponseEntity.badRequest().body(response);
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(@RequestHeader("Authorization") String authToken) {
-        AuthToken newAuthToken = authenticationService.refreshToken(authToken);
-        if (newAuthToken != null) {
-            return ResponseEntity.ok(newAuthToken);
-        } else {
-            return ResponseEntity.badRequest().body("Invalid or expired token.");
+        Response response = new Response();
+        try {
+            AuthToken newAuthToken = authenticationService.refreshToken(authToken);
+            if (newAuthToken != null) {
+                return ResponseEntity.ok(newAuthToken);
+            }
+            response.setMessage("Invalid or expired token");
+        } catch (Exception e) {
+            response.setMessage("Refresh failed: " + e.getMessage());
         }
+        return ResponseEntity.badRequest().body(response);
     }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody EmailRequest emailRequest) {
+        Response response = new Response();
         try {
             if (passwordResetService.requestPasswordReset(emailRequest)) {
-                return ResponseEntity.ok("Password reset email has been successfully sent. Please check your email.");
+                response.setMessage("Password reset email has been successfully sent. Please check your email");
+                return ResponseEntity.ok(response);
             }
-
-            return ResponseEntity.badRequest().body("Password reset email failed to send.");
+            response.setMessage("Password reset email failed to send");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Password reset request failed to send: " + e.getMessage());
+            response.setMessage("Password reset request failed to send: " + e.getMessage());
         }
+        return ResponseEntity.badRequest().body(response);
     }
 
     @PostMapping("/forgot-password-confirmation")
     public ResponseEntity<?> forgotPasswordConfirmation(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
-        if (passwordResetService.confirmPasswordReset(forgotPasswordRequest)) {
-            return ResponseEntity.ok("Password successfully changed.");
+        Response response = new Response();
+        try {
+            if (passwordResetService.confirmPasswordReset(forgotPasswordRequest)) {
+                response.setMessage("Password successfully changed");
+                return ResponseEntity.ok(response);
+            }
+            response.setMessage("Password change failed, please check the token you entered");
+        } catch (Exception e) {
+            response.setMessage("Password change failed: " + e.getMessage());
         }
-
-        return ResponseEntity.badRequest().body("Password change failed, please check the token you entered.");
+        return ResponseEntity.badRequest().body(response);
     }
 }

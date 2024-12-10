@@ -24,7 +24,6 @@ public class PaymentService {
 
     public boolean verifyPaymentOTP(String email, String otp) {
         Optional<Participant> participantOptional = participantDAO.findByEmail(email);
-
         if (participantOptional.isPresent()) {
             Participant participant = participantOptional.get();
 
@@ -38,8 +37,9 @@ public class PaymentService {
                 participantDAO.save(participant);
                 return true;
             }
+        } else {
+            throw new EntityNotFoundException("Participant not found");
         }
-
         return false;
     }
 
@@ -54,23 +54,21 @@ public class PaymentService {
                 return true;
             }
         } else {
-            throw new EntityNotFoundException("Participant not found.");
+            throw new EntityNotFoundException("Participant not found");
         }
-
         return false;
     }
 
 
     public boolean isPaymentOTPExpired(String email) {
         Optional<Participant> participantOptional = participantDAO.findByEmail(email);
-
         if (participantOptional.isPresent()) {
             Participant participant = participantOptional.get();
             return participant.getPaymentOTPExpiration() != null &&
-                    LocalDateTime.now().isAfter(participant.getPaymentOTPExpiration());
+                    LocalDateTime.now().isBefore(participant.getPaymentOTPExpiration());
+        } else {
+            throw new EntityNotFoundException("Participant not found");
         }
-
-        return false;
     }
 
     private String generateVerificationCode() {
@@ -89,20 +87,26 @@ public class PaymentService {
         return verificationCode.toString();
     }
 
-    public void sendEmailVerification(String email, Long participantId) {
+    public Boolean sendEmailVerification(String email, Long participantId) {
         String code = generateVerificationCode();
-
         Optional<Participant> participantOptional = participantDAO.findById(participantId);
 
         if (participantOptional.isPresent()) {
             Participant participant = participantOptional.get();
-            participant.setPaymentOTP(code);
-            participant.setPaymentOTPExpiration(LocalDateTime.now().plusMinutes(15));
-            participantDAO.save(participant);
-        }
+            if (participant.isBillVerified()) {
+                participant.setPaymentOTP(code);
+                participant.setPaymentOTPExpiration(LocalDateTime.now().plusMinutes(15));
+                participantDAO.save(participant);
 
-        String subject = "OTP Code";
-        String text = "Your OTP code is: " + code;
-        emailService.sendEmail(email, subject, text);
+                String subject = "OTP Code";
+                String text = "Your OTP code is: " + code;
+                emailService.sendEmail(email, subject, text);
+
+                return true;
+            }
+        } else {
+            throw new EntityNotFoundException("Participant not found");
+        }
+        return false;
     }
 }

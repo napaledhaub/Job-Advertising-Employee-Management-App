@@ -4,7 +4,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LoginResponse {
+public class LoginResponse extends Response {
     private String token;
-    private String message;
 }

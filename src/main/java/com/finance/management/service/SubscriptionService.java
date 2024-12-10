@@ -37,7 +37,7 @@ public class SubscriptionService {
             Participant participant = authToken.getParticipant();
             return subscriptionDAO.findAllByParticipant(participant);
         } else {
-            throw new EntityNotFoundException("Participant not found.");
+            throw new EntityNotFoundException("Participant not found");
         }
     }
 
@@ -63,7 +63,7 @@ public class SubscriptionService {
             participantDAO.save(participant);
             return subscriptionDAO.save(subscription);
         } else {
-            throw new EntityNotFoundException("Participant not found.");
+            throw new EntityNotFoundException("Participant not found");
         }
     }
 
@@ -89,10 +89,10 @@ public class SubscriptionService {
                 participantDAO.save(participant);
                 subscriptionDAO.delete(subscriptionOptional.get());
             } else {
-                throw new EntityNotFoundException("Subscription code not found.");
+                throw new EntityNotFoundException("Subscription code not found");
             }
         } else {
-            throw new EntityNotFoundException("Participant not found.");
+            throw new EntityNotFoundException("Participant not found");
         }
     }
 
@@ -118,10 +118,10 @@ public class SubscriptionService {
                 participant.setBillVerified(false);
                 participantDAO.save(participant);
             } else {
-                throw new EntityNotFoundException("Subscription not found.");
+                throw new EntityNotFoundException("Subscription not found");
             }
         } else {
-            throw new EntityNotFoundException("Participant not found.");
+            throw new EntityNotFoundException("Participant not found");
         }
     }
 }

@@ -28,14 +28,6 @@ public class EmailService {
         emailSender.send(message);
     }
 
-    public void sendEmailPasswordReset(String to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
-        emailSender.send(message);
-    }
-
     public String generateVerificationCode() {
         int codeLength = 6;
         String allowedChars = "0123456789";

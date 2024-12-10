@@ -5,6 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class VerificationRequest extends EmailRequest {
-    private String otp;
+public class Response {
+    private String message;
 }

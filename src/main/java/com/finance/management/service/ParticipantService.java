@@ -37,7 +37,7 @@ public class ParticipantService {
             participant.setName(newFullName);
             participantDAO.save(participant);
         } else {
-            throw new EntityNotFoundException("Participant not found.");
+            throw new EntityNotFoundException("Participant not found");
         }
     }
 
@@ -53,7 +53,7 @@ public class ParticipantService {
             participant.setCreditCardInfo(encryptedCreditCardInfo);
             participantDAO.save(participant);
         } else {
-            throw new EntityNotFoundException("Participant not found.");
+            throw new EntityNotFoundException("Participant not found");
         }
     }
 
@@ -67,10 +67,10 @@ public class ParticipantService {
                 participantDAO.save(participant);
             }
             else {
-                throw new RuntimeException("Old password not match.");
+                throw new RuntimeException("Old password not match");
             }
         } else {
-            throw new EntityNotFoundException("Participant not found.");
+            throw new EntityNotFoundException("Participant not found");
         }
     }
 
@@ -85,8 +85,7 @@ public class ParticipantService {
 
             return Base64.getEncoder().encodeToString(encryptedData);
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
     }
 }

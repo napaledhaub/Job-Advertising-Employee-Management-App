@@ -35,9 +35,9 @@ public class AuthenticationService {
                 loginResponse.setMessage("Login Successful");
                 return loginResponse;
             }
-            loginResponse.setMessage("Incorrect email or password.");
+            loginResponse.setMessage("Incorrect email or password");
         }
-        loginResponse.setMessage("Incorrect email or password.");
+        loginResponse.setMessage("Incorrect email or password");
 
         return loginResponse;
     }

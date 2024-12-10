@@ -1,12 +1,12 @@
 package com.finance.management.rest;
 
 import com.finance.management.service.PaymentService;
+import com.finance.management.util.EmailRequest;
+import com.finance.management.util.Response;
+import com.finance.management.util.VerificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/participant")
@@ -15,31 +15,49 @@ public class ParticipantController {
     private PaymentService paymentService;
 
     @PostMapping("/verify-payment")
-    public ResponseEntity<String> verifyPayment(@RequestParam String email, @RequestParam String otp) {
-        if (paymentService.verifyPaymentOTP(email, otp)) {
-            return ResponseEntity.ok("Payment verification successful.");
-        } else {
-            return ResponseEntity.badRequest().body("Payment verification failed.");
+    public ResponseEntity<?> verifyPayment(@RequestBody VerificationRequest verificationRequest) {
+        Response response = new Response();
+        try {
+            if (paymentService.verifyPaymentOTP(verificationRequest.getEmail(), verificationRequest.getOtp())) {
+                response.setMessage("Payment verification successful");
+                return ResponseEntity.ok(response);
+            }
+            response.setMessage("Payment verification failed");
+        } catch (Exception e) {
+            response.setMessage("Payment verification failed: " + e.getMessage());
         }
+        return ResponseEntity.badRequest().body(response);
     }
 
     @PostMapping("/is-payment-otp-expired")
-    public ResponseEntity<String> isPaymentOTPExpired(@RequestParam String email) {
-        if (paymentService.isPaymentOTPExpired(email)) {
-            return ResponseEntity.ok("Payment OTP has expired.");
-        } else {
-            return ResponseEntity.ok("Payment OTP is still valid.");
+    public ResponseEntity<?> isPaymentOTPExpired(@RequestBody EmailRequest emailRequest) {
+        Response response = new Response();
+        try {
+            if (paymentService.isPaymentOTPExpired(emailRequest.getEmail())) {
+                response.setMessage("Payment OTP is still valid");
+            } else {
+                response.setMessage("Payment OTP is not valid");
+            }
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.setMessage("Check payment otp is expired failed: " + e.getMessage());
         }
+        return ResponseEntity.badRequest().body(response);
     }
 
     @PostMapping("/send-email-otp")
-    public ResponseEntity<String> sendEmailVerification(@RequestParam String email, @RequestParam Long participantId) {
+    public ResponseEntity<?> sendEmailVerification(@RequestParam Long participantId, @RequestBody EmailRequest emailRequest) {
+        Response response = new Response();
         try {
-            paymentService.sendEmailVerification(email, participantId);
-            return ResponseEntity.ok("Verification email has been sent.");
+            if (paymentService.sendEmailVerification(emailRequest.getEmail(), participantId)) {
+                response.setMessage("Verification email has been sent");
+            } else {
+                response.setMessage("Bill verification is not valid");
+            }
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Failed to send verification email.");
+            response.setMessage("Failed to send verification email: " + e.getMessage());
         }
+        return ResponseEntity.badRequest().body(response);
     }
 }
